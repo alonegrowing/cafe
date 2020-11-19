@@ -6,8 +6,7 @@ rpc_port = 8889
 
 [log]
 level="debug"
-rotate="hour"
-logpath = "./logs"
+logpath = "./logs/trace.log"
 
 [[database]]
 name="intersting"

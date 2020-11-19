@@ -12,8 +12,8 @@ func Auth() gin.HandlerFunc {
 		id := r.Query("id")
 		if id == "2" {
 			r.JSON(200, gin.H{
-				"code":    macro.STATUS_AUTH_FAILED,
-				"message": macro.ERR_MSG[macro.STATUS_AUTH_FAILED],
+				"code":    macro.StatusAuthFailed,
+				"message": macro.ErrMsg[macro.StatusAuthFailed],
 				"data":    []int{},
 			})
 			r.Abort()

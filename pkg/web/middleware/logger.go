@@ -1,17 +1,18 @@
 package middleware
 
 import (
+	"context"
 	"strings"
 	"time"
 
-	log "github.com/alonegrowing/cafe/pkg/sea/logging"
+	"github.com/alonegrowing/cafe/pkg/sea/log"
 
 	"github.com/gin-gonic/gin"
 )
 
 // 登陆校验 中间件
 func Logger() gin.HandlerFunc {
-
+	var ctx = context.TODO()
 	return func(c *gin.Context) {
 		// Start timer
 		start := time.Now()
@@ -35,7 +36,7 @@ func Logger() gin.HandlerFunc {
 		handlerNamePathParts := strings.Split(c.HandlerName(), "/")
 		handleName := handlerNamePathParts[len(handlerNamePathParts)-1]
 
-		log.Infof("[ACCESS] %v | %20v | %3d | %13v | %15s | %-7s %s\n%s",
+		log.Infof(ctx, "[ACCESS] %v | %20v | %3d | %13v | %15s | %-7s %s\n%s",
 			end.Format("2006/01/02 - 15:04:05"),
 			handleName,
 			statusCode,

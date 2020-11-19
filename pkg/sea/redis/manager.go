@@ -10,7 +10,7 @@ type Manager struct {
 	sync.RWMutex
 }
 
-func NewManager(c []RedisConfig) (*Manager, error) {
+func NewManager(c []Config) (*Manager, error) {
 	m := &Manager{
 		redisMap: map[string]*Redis{},
 	}

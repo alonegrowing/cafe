@@ -7,16 +7,16 @@ import (
 )
 
 var (
-	REDIS_CLIENT_NOT_INIT = errors.New("redis client not init")
+	RedisClientNotInit = errors.New("redis client not init")
 )
 
 var defaultRedis map[string]*redis.Redis
 
-func NewRedis(redisConfigs []redis.RedisConfig) error {
+func NewRedis(configs []redis.Config) error {
 	if defaultRedis == nil {
 		defaultRedis = make(map[string]*redis.Redis)
 	}
-	for _, conf := range redisConfigs {
+	for _, conf := range configs {
 		client, err := redis.NewRedis(&conf)
 		if err != nil || client == nil {
 			continue
@@ -30,5 +30,5 @@ func GetRedis(service string) (*redis.Redis, error) {
 	if client, ok := defaultRedis[service]; ok {
 		return client, nil
 	}
-	return nil, REDIS_CLIENT_NOT_INIT
+	return nil, RedisClientNotInit
 }

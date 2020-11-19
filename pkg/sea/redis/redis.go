@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	log "github.com/alonegrowing/cafe/pkg/sea/logging"
+	"github.com/alonegrowing/cafe/pkg/sea/log"
 	"github.com/garyburd/redigo/redis"
 )
 
@@ -19,15 +19,17 @@ var logFormat = "2006/01/02 15:04:05"
 
 type Redis struct {
 	pool     *redis.Pool
-	opts     *RedisConfig
+	opts     *Config
 	lastTime int64
 }
 
-func NewRedis(o *RedisConfig) (store *Redis, err error) {
+var ctx = context.TODO()
+
+func NewRedis(o *Config) (store *Redis, err error) {
 	if err = o.init(); err != nil {
 		return
 	}
-	opts := []redis.DialOption{}
+	var opts []redis.DialOption
 	opts = append(opts, redis.DialConnectTimeout(time.Duration(o.ConnectTimeout)*time.Millisecond))
 	opts = append(opts, redis.DialReadTimeout(time.Duration(o.ReadTimeout)*time.Millisecond))
 	opts = append(opts, redis.DialWriteTimeout(time.Duration(o.WriteTimeout)*time.Millisecond))
@@ -80,7 +82,7 @@ func redisinit(server, password string, maxIdle, idleTimeout, maxActive int, opt
 }
 
 func (r *Redis) RPop(key string) (res string, err error) {
-	reply, err := r.do("RPOP", redisBytes, key)
+	reply, err := r.do("RPOP", Bytes, key)
 	if err != nil {
 		return "", err
 	}
@@ -115,13 +117,13 @@ func (r *Redis) Receive(name string, closech chan struct{}, bufferSize int) chan
 					if data != nil {
 						ms, err := redis.ByteSlices(data, nil)
 						if err != nil {
-							log.Errorf("convert redis response error %v", err)
+							log.Errorf(context.TODO(), "convert redis response error %v", err)
 						} else {
 							ch <- ms[1]
 						}
 					}
 				} else if err != ErrTimeout {
-					log.Errorf("BRPOP error %s", err)
+					log.Errorf(ctx, "BRPOP error %s", err)
 				}
 			}
 		}
@@ -149,7 +151,7 @@ func (r *Redis) DoCtx(ctx context.Context, cmd string, args ...interface{}) (rep
 
 func (r *Redis) Set(key, value interface{}) (ret bool, err error) {
 	var reply interface{}
-	reply, err = r.do("SET", redisString, key, value)
+	reply, err = r.do("SET", String, key, value)
 	if err != nil {
 		return
 	}
@@ -164,7 +166,7 @@ func (r *Redis) Set(key, value interface{}) (ret bool, err error) {
 
 func (r *Redis) SetExSecond(key, value interface{}, dur int) (ret string, err error) {
 	var reply interface{}
-	reply, err = r.do("SET", redisString, key, value, "EX", dur)
+	reply, err = r.do("SET", String, key, value, "EX", dur)
 	if err != nil {
 		return
 	}
@@ -174,7 +176,7 @@ func (r *Redis) SetExSecond(key, value interface{}, dur int) (ret string, err er
 
 func (r *Redis) Get(key string) (ret []byte, err error) {
 	var reply interface{}
-	reply, err = r.do("GET", redisBytes, key)
+	reply, err = r.do("GET", Bytes, key)
 	if err != nil {
 		if err == redis.ErrNil {
 			err = nil
@@ -189,7 +191,7 @@ func (r *Redis) Get(key string) (ret []byte, err error) {
 
 func (r *Redis) GetInt(key string) (ret int, err error) {
 	var reply interface{}
-	reply, err = r.do("GET", redisInt, key)
+	reply, err = r.do("GET", Int, key)
 	if err != nil {
 		return
 	}
@@ -199,7 +201,7 @@ func (r *Redis) GetInt(key string) (ret int, err error) {
 
 func (r *Redis) MGet(keys ...interface{}) (ret [][]byte, err error) {
 	var reply interface{}
-	reply, err = r.do("MGET", redisByteSlices, keys...)
+	reply, err = r.do("MGET", ByteSlices, keys...)
 	if err != nil {
 		return
 	}
@@ -209,7 +211,7 @@ func (r *Redis) MGet(keys ...interface{}) (ret [][]byte, err error) {
 
 func (r *Redis) MSet(keys ...interface{}) (ret string, err error) {
 	var reply interface{}
-	reply, err = r.do("MSET", redisString, keys...)
+	reply, err = r.do("MSET", String, keys...)
 	if err != nil {
 		return
 	}
@@ -219,7 +221,7 @@ func (r *Redis) MSet(keys ...interface{}) (ret string, err error) {
 
 func (r *Redis) Del(args ...interface{}) (count int, err error) {
 	var reply interface{}
-	reply, err = r.do("Del", redisInt, args...)
+	reply, err = r.do("Del", Int, args...)
 	if err != nil {
 		return
 	}
@@ -229,7 +231,7 @@ func (r *Redis) Del(args ...interface{}) (count int, err error) {
 
 func (r *Redis) Exists(key string) (res bool, err error) {
 	var reply interface{}
-	reply, err = r.do("Exists", redisBool, key)
+	reply, err = r.do("Exists", Bool, key)
 	if err != nil {
 		return
 	}
@@ -253,7 +255,7 @@ func (r *Redis) HDel(key interface{}, fields ...interface{}) (res int, err error
 	keys := []interface{}{key}
 	keys = append(keys, fields...)
 
-	reply, err = r.do("HDEL", redisInt, keys...)
+	reply, err = r.do("HDEL", Int, keys...)
 	if err != nil {
 		return
 	}
@@ -263,7 +265,7 @@ func (r *Redis) HDel(key interface{}, fields ...interface{}) (res int, err error
 
 func (r *Redis) HSet(key, fieldk string, fieldv interface{}) (res int, err error) {
 	var reply interface{}
-	reply, err = r.do("HSET", redisInt, key, fieldk, fieldv)
+	reply, err = r.do("HSET", Int, key, fieldk, fieldv)
 	if err != nil {
 		return
 	}
@@ -273,7 +275,7 @@ func (r *Redis) HSet(key, fieldk string, fieldv interface{}) (res int, err error
 
 func (r *Redis) HGet(key, field string) (res string, err error) {
 	var reply interface{}
-	reply, err = r.do("HGET", redisString, key, field)
+	reply, err = r.do("HGET", String, key, field)
 	if err != nil {
 		return
 	}
@@ -283,7 +285,7 @@ func (r *Redis) HGet(key, field string) (res string, err error) {
 
 func (r *Redis) HGetInt(key, field string) (res int, err error) {
 	var reply interface{}
-	reply, err = r.do("HGET", redisInt, key, field)
+	reply, err = r.do("HGET", Int, key, field)
 	if err != nil {
 		return
 	}
@@ -295,7 +297,7 @@ func (r *Redis) HMGet(key string, fields ...interface{}) (res []string, err erro
 	var reply interface{}
 	keys := []interface{}{key}
 	keys = append(keys, fields...)
-	reply, err = r.do("HMGET", redisStrings, keys...)
+	reply, err = r.do("HMGET", Strings, keys...)
 	if err != nil {
 		return
 	}
@@ -307,7 +309,7 @@ func (r *Redis) HMSet(key string, fields ...interface{}) (res string, err error)
 	var reply interface{}
 	keys := []interface{}{key}
 	keys = append(keys, fields...)
-	reply, err = r.do("HMSET", redisString, keys...)
+	reply, err = r.do("HMSET", String, keys...)
 	if err != nil {
 		return
 	}
@@ -317,7 +319,7 @@ func (r *Redis) HMSet(key string, fields ...interface{}) (res string, err error)
 
 func (r *Redis) HGetAll(key string) (res map[string]string, err error) {
 	var reply interface{}
-	reply, err = r.do("HGETALL", redisStringMap, key)
+	reply, err = r.do("HGETALL", StringMap, key)
 	if err != nil {
 		return
 	}
@@ -327,7 +329,7 @@ func (r *Redis) HGetAll(key string) (res map[string]string, err error) {
 
 func (r *Redis) HKeys(key string) (res []string, err error) {
 	var reply interface{}
-	reply, err = r.do("HKEYS", redisStrings, key)
+	reply, err = r.do("HKEYS", Strings, key)
 	if err != nil {
 		return
 	}
@@ -342,7 +344,7 @@ func (r *Redis) SAdd(key string, members ...interface{}) (res int, err error) {
 	var reply interface{}
 	keys := []interface{}{key}
 	keys = append(keys, members...)
-	reply, err = r.do("SADD", redisInt, keys...)
+	reply, err = r.do("SADD", Int, keys...)
 	if err != nil {
 		return
 	}
@@ -354,7 +356,7 @@ func (r *Redis) SRem(key string, members ...interface{}) (res int, err error) {
 	var reply interface{}
 	keys := []interface{}{key}
 	keys = append(keys, members...)
-	reply, err = r.do("SREM", redisInt, keys...)
+	reply, err = r.do("SREM", Int, keys...)
 	if err != nil {
 		return
 	}
@@ -364,7 +366,7 @@ func (r *Redis) SRem(key string, members ...interface{}) (res int, err error) {
 
 func (r *Redis) SIsMember(key string, member string) (res bool, err error) {
 	var reply interface{}
-	reply, err = r.do("SISMEMBER", redisBool, key, member)
+	reply, err = r.do("SISMEMBER", Bool, key, member)
 	if err != nil {
 		return
 	}
@@ -375,7 +377,7 @@ func (r *Redis) SIsMember(key string, member string) (res bool, err error) {
 
 func (r *Redis) SMembers(key string) (res []string, err error) {
 	var reply interface{}
-	reply, err = r.do("SMEMBERS", redisStrings, key)
+	reply, err = r.do("SMEMBERS", Strings, key)
 	if err != nil {
 		return
 	}
@@ -390,7 +392,7 @@ func (r *Redis) ZAdd(key string, args ...interface{}) (res int, err error) {
 	var reply interface{}
 	keys := []interface{}{key}
 	keys = append(keys, args...)
-	reply, err = r.do("ZADD", redisInt, keys...)
+	reply, err = r.do("ZADD", Int, keys...)
 	if err != nil {
 		return
 	}
@@ -402,7 +404,7 @@ func (r *Redis) ZRange(key string, args ...interface{}) (res []string, err error
 	var reply interface{}
 	keys := []interface{}{key}
 	keys = append(keys, args...)
-	reply, err = r.do("ZRANGE", redisStrings, keys...)
+	reply, err = r.do("ZRANGE", Strings, keys...)
 	if err != nil {
 		return
 	}
@@ -412,7 +414,7 @@ func (r *Redis) ZRange(key string, args ...interface{}) (res []string, err error
 
 func (r *Redis) ZRangeInt(key string, start, stop int) (res []int, err error) {
 	var reply interface{}
-	reply, err = r.do("ZRANGE", redisInts, key, start, stop)
+	reply, err = r.do("ZRANGE", Ints, key, start, stop)
 	if err != nil {
 		return
 	}
@@ -422,7 +424,7 @@ func (r *Redis) ZRangeInt(key string, start, stop int) (res []int, err error) {
 
 func (r *Redis) ZRangeWithScore(key string, start, stop int) (res []string, err error) {
 	var reply interface{}
-	reply, err = r.do("ZRANGE", redisStrings, key, start, stop, "WITHSCORES")
+	reply, err = r.do("ZRANGE", Strings, key, start, stop, "WITHSCORES")
 	if err != nil {
 		return
 	}
@@ -432,7 +434,7 @@ func (r *Redis) ZRangeWithScore(key string, start, stop int) (res []string, err 
 
 func (r *Redis) ZCount(key string, min, max int) (res int, err error) {
 	var reply interface{}
-	reply, err = r.do("ZCOUNT", redisInt, key, min, max)
+	reply, err = r.do("ZCOUNT", Int, key, min, max)
 	if err != nil {
 		return
 	}
@@ -442,7 +444,7 @@ func (r *Redis) ZCount(key string, min, max int) (res int, err error) {
 
 func (r *Redis) ZCard(key string) (res int, err error) {
 	var reply interface{}
-	reply, err = r.do("ZCARD", redisInt, key)
+	reply, err = r.do("ZCARD", Int, key)
 	if err != nil {
 		return
 	}
@@ -452,7 +454,7 @@ func (r *Redis) ZCard(key string) (res int, err error) {
 
 func (r *Redis) LLen(key string) (res int64, err error) {
 	var reply interface{}
-	reply, err = r.do("LLEN", redisInt64, key)
+	reply, err = r.do("LLEN", Int64, key)
 	if err != nil {
 		return
 	}
@@ -462,7 +464,7 @@ func (r *Redis) LLen(key string) (res int64, err error) {
 
 func (r *Redis) Incrby(key string, incr int) (res int64, err error) {
 	var reply interface{}
-	reply, err = r.do("INCRBY", redisInt64, key, incr)
+	reply, err = r.do("INCRBY", Int64, key, incr)
 	if err != nil {
 		return
 	}
@@ -472,7 +474,7 @@ func (r *Redis) Incrby(key string, incr int) (res int64, err error) {
 
 func (r *Redis) ZIncrby(key string, incr int, member string) (res int, err error) {
 	var reply interface{}
-	reply, err = r.do("ZINCRBY", redisInt, key, incr, member)
+	reply, err = r.do("ZINCRBY", Int, key, incr, member)
 	if err != nil {
 		return
 	}
@@ -485,7 +487,7 @@ func (r *Redis) ZIncrby(key string, incr int, member string) (res int, err error
  */
 func (r *Redis) ZRank(key string, member string) (res int, err error) {
 	var reply interface{}
-	reply, err = r.do("ZRANK", redisInt, key, member)
+	reply, err = r.do("ZRANK", Int, key, member)
 	if err != nil {
 		return
 	}
@@ -501,7 +503,7 @@ func (r *Redis) ZRem(key string, members ...interface{}) (res int, err error) {
 	keys := []interface{}{key}
 	keys = append(keys, members...)
 
-	reply, err = r.do("ZREM", redisInt, keys...)
+	reply, err = r.do("ZREM", Int, keys...)
 	if err != nil {
 		return
 	}
@@ -514,7 +516,7 @@ func (r *Redis) ZRemrangebyrank(key string, members ...interface{}) (res int, er
 	keys := []interface{}{key}
 	keys = append(keys, members...)
 
-	reply, err = r.do("ZREMRANGEBYRANK", redisInt, keys...)
+	reply, err = r.do("ZREMRANGEBYRANK", Int, keys...)
 	if err != nil {
 		return
 	}
@@ -526,12 +528,12 @@ func (r *Redis) Subscribe(ctx context.Context, key string, maxSize int) (chan []
 	ch := make(chan []byte, maxSize)
 
 	if r.opts.ReadTimeout < 100 && r.opts.ReadTimeout > 0 {
-		return ch, errors.New("Read timeout should be longer")
+		return ch, errors.New("ReadTimeout Should be longer")
 	}
 
 	healthCheckPeriod := r.opts.ReadTimeout * 70 / 100
 
-	var offHealthCheck = (healthCheckPeriod == 0)
+	var offHealthCheck = healthCheckPeriod == 0
 	done := make(chan error, 1)
 
 	// While not a permanent error on the connection.
@@ -576,9 +578,9 @@ func (r *Redis) Subscribe(ctx context.Context, key string, maxSize int) (chan []
 				case redis.Message:
 					ch <- v.Data
 				case redis.Subscription:
-					log.Infof("Receive chan (%s) %s %d", v.Channel, v.Kind, v.Count)
+					log.Infof(ctx, "Receive chan (%s) %s %d", v.Channel, v.Kind, v.Count)
 				case error:
-					log.Errorf("Receive error (%v), client will reconnect..", v)
+					log.Errorf(ctx, "Receive error (%v), client will reconnect..", v)
 					client.Close()
 					if !offHealthCheck {
 						done <- v
@@ -598,7 +600,7 @@ func (r *Redis) Subscribe(ctx context.Context, key string, maxSize int) (chan []
  */
 func (r *Redis) ZScore(key, member string) (res float64, err error) {
 	var reply interface{}
-	reply, err = r.do("ZSCORE", redisFloat64, key, member)
+	reply, err = r.do("ZSCORE", Float64, key, member)
 	if err != nil {
 		return
 	}
@@ -610,7 +612,7 @@ func (r *Redis) Zrevrange(key string, args ...interface{}) (res []string, err er
 	var reply interface{}
 	argss := []interface{}{key}
 	argss = append(argss, args...)
-	reply, err = r.do("ZREVRANGE", redisStrings, argss...)
+	reply, err = r.do("ZREVRANGE", Strings, argss...)
 	if err != nil {
 		return
 	}
@@ -622,7 +624,7 @@ func (r *Redis) Zrevrangebyscore(key string, args ...interface{}) (res []string,
 	var reply interface{}
 	argss := []interface{}{key}
 	argss = append(argss, args...)
-	reply, err = r.do("ZREVRANGEBYSCORE", redisStrings, argss...)
+	reply, err = r.do("ZREVRANGEBYSCORE", Strings, argss...)
 	if err != nil {
 		return
 	}
@@ -634,7 +636,7 @@ func (r *Redis) ZrevrangebyscoreInt(key string, args ...interface{}) (res []int,
 	var reply interface{}
 	argss := []interface{}{key}
 	argss = append(argss, args...)
-	reply, err = r.do("ZREVRANGEBYSCORE", redisInts, argss...)
+	reply, err = r.do("ZREVRANGEBYSCORE", Ints, argss...)
 	if err != nil {
 		return
 	}
@@ -682,7 +684,7 @@ retry2:
 	reply, err = client.Do(cmd, args...)
 	if r.opts.Retry > 0 && count < r.opts.Retry && err != nil && err != redis.ErrNil {
 		count = count + 1
-		log.GenLogf("redisclient retry %d times, cmd %s cause %s", count, cmd, err)
+		log.Infof(ctx, "redisclient retry %d times, cmd %s cause %s", count, cmd, err)
 		time.Sleep(time.Millisecond * r.randomDuration(10))
 		goto retry2
 	}
@@ -701,13 +703,13 @@ retry2:
 		} else {
 			stCode = redisError
 		}
-		log.GenLogf("%d|redisclient|%s|%s|%d|%s|%s", serverLocalPid, "reqid", cmd, stCode, err, address)
+		log.Infof(context.Background(), "%d|redisclient|%s|%s|%d|%s|%s", serverLocalPid, "reqid", cmd, stCode, err, address)
 	}
 
 	endTime := time.Now()
 	costTime := time.Now().Sub(now).Nanoseconds() / 1e6
 	if (r.opts.SlowTime > 0 && costTime > int64(r.opts.SlowTime)) || (stCode == redisTimeout) {
-		log.SlowLogf("%d|%s|redisclient|%s|%s|%d|%d|%s|%s", serverLocalPid, endTime.Format(logFormat), "reqid", cmd, stCode, costTime, address, "nil")
+		log.Infof(ctx, "%d|%s|redisclient|%s|%s|%d|%d|%s|%s", serverLocalPid, endTime.Format(logFormat), "reqid", cmd, stCode, costTime, address, "nil")
 	}
 	return
 }

@@ -1,30 +1,24 @@
 package config
 
 import (
+	"os"
+
 	"github.com/alonegrowing/cafe/pkg/basic/resource"
+	"github.com/alonegrowing/cafe/pkg/sea/log"
 	"github.com/alonegrowing/cafe/pkg/sea/redis"
 	"github.com/alonegrowing/cafe/pkg/sea/sql"
 	"github.com/alonegrowing/cafe/pkg/sea/tomlconfig"
 )
 
 var (
-	logRotate     = "hour" // hour | day
 	ServiceConfig Config
 )
 
 func init() {
 	var conf = "./conf/prod/config.toml"
-
-	// config parser
 	_ = tomlconfig.ParseTomlConfig(conf, &ServiceConfig)
-
-	// logger init
 	InitLoggerConfig(ServiceConfig.Logger)
-
-	// redis init
 	_ = resource.NewRedis(ServiceConfig.Redis)
-
-	// mysql init
 	_ = resource.NewMysqlGroup(ServiceConfig.Database)
 }
 
@@ -38,5 +32,17 @@ type Config struct {
 	Service     Service              `toml:"service"`
 	Logger      LoggerConfig         `toml:"log"`
 	Database    []sql.SQLGroupConfig `toml:"database"`
-	Redis       []redis.RedisConfig  `toml:"redis"`
+	Redis       []redis.Config       `toml:"redis"`
+}
+
+type LoggerConfig struct {
+	Level   log.Level `toml:"level"`
+	LogPath string    `toml:"logpath"`
+}
+
+func InitLoggerConfig(conf LoggerConfig) {
+	log.SetLevel(conf.Level)
+
+	file, _ := os.OpenFile(conf.LogPath, os.O_CREATE|os.O_WRONLY, 0666)
+	log.SetOutput(file)
 }
