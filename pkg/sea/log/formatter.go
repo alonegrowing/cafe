@@ -18,8 +18,6 @@ var (
 	processID = strconv.Itoa(os.Getpid())
 )
 
-// 日志格式和采样规则 http://wiki.in.zhihu.com/pages/viewpage.action?pageId=69050370
-
 var (
 	severityMap = map[logrus.Level]byte{
 		logrus.TraceLevel: 'D',

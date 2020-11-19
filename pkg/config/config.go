@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/alonegrowing/cafe/pkg/basic/resource"
+	"github.com/alonegrowing/cafe/pkg/basic/util"
 	"github.com/alonegrowing/cafe/pkg/sea/log"
 	"github.com/alonegrowing/cafe/pkg/sea/redis"
 	"github.com/alonegrowing/cafe/pkg/sea/sql"
@@ -41,8 +42,8 @@ type LoggerConfig struct {
 }
 
 func InitLoggerConfig(conf LoggerConfig) {
-	log.SetLevel(conf.Level)
-
-	file, _ := os.OpenFile(conf.LogPath, os.O_CREATE|os.O_WRONLY, 0666)
+	log.SetLevel(log.InfoLevel)
+	file, err := os.OpenFile(conf.LogPath, os.O_CREATE|os.O_WRONLY, 0666)
+	util.PanicIfError(err)
 	log.SetOutput(file)
 }
