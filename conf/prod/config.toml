@@ -1,0 +1,38 @@
+service_name="purple"
+
+[service]
+web_port = 8888
+rpc_port = 8889
+
+[log]
+level="debug"
+rotate="hour"
+logpath = "./logs"
+
+[[database]]
+name="intersting"
+master = "root:hope@tcp(127.0.0.1:3306)/purple?charset=utf8mb4"
+slaves = ["root:hope@tcp(127.0.0.1:3306)/purple?charset=utf8mb4"]
+
+
+[[redis]]
+server_name="purple"
+addr="127.0.0.1:6379"
+password="hope"
+max_idle=100
+max_active=500
+idle_timeout=1000
+connect_timeout=300
+read_timeout=600
+write_timeout=600
+database=0
+slow_time = 200
+
+[[kafka_consume]]
+consume_from="kafka_open_room"
+zkpoints="127.0.0.1:2181/config/inke/inf/mq/kafka01"
+topic = "publish_msg"
+group = "publish_msg_wheel_online_v1" #跟线上一致，以免重复处理
+initoffset =  -1
+process_timeout = 10
+commit_interval = 10
