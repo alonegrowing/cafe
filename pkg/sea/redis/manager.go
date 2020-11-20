@@ -17,9 +17,9 @@ func NewManager(c []Config) (*Manager, error) {
 	for _, config := range c {
 		r, err := NewRedis(&config)
 		if err == nil {
-			m.redisMap[config.ServerName] = r
+			m.redisMap[config.Name] = r
 		} else {
-			return nil, fmt.Errorf("redis: init redis: %s error: %s", config.ServerName, err)
+			return nil, fmt.Errorf("redis: init redis: %s error: %s", config.Name, err)
 		}
 	}
 	return m, nil

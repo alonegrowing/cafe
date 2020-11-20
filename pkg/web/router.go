@@ -20,10 +20,9 @@ func NewRouter() *gin.Engine {
 		c.String(200, "pong")
 	})
 
-	memberHandler := handler.NewHomePageHandler()
+	homeHandler := handler.NewHomePageHandler()
 
-	// 路由定义
-	route.GET("/api/member", middleware.Auth(), memberHandler.Get)
+	route.GET("/api/home", homeHandler.Get)
 
 	return route
 }

@@ -2,11 +2,9 @@ package middleware
 
 import (
 	"github.com/alonegrowing/cafe/pkg/basic/macro"
-
 	"github.com/gin-gonic/gin"
 )
 
-// 登陆校验 中间件
 func Auth() gin.HandlerFunc {
 	return func(r *gin.Context) {
 		id := r.Query("id")

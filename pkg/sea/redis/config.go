@@ -1,11 +1,9 @@
 package redis
 
-import (
-	"fmt"
-)
+import "errors"
 
 type Config struct {
-	ServerName     string `json:"server_name"`
+	Name           string `json:"name"`
 	Addr           string `json:"addr"`
 	Password       string `json:"password"`
 	MaxIdle        int    `json:"max_idle"`
@@ -19,43 +17,10 @@ type Config struct {
 	Retry          int    `json:"retry"`
 }
 
-func (o *Config) init() error {
-	if o.ServerName == "" {
-		return fmt.Errorf("redis: ServerName not allowed empty string")
+func (o *Config) isValid() error {
+	if o.Name == "" || o.Addr == "" || o.Database < 0 || o.MaxIdle < 100 || o.MaxActive < 100 || o.IdleTimeout < 100 ||
+		o.ReadTimeout < 50 || o.WriteTimeout < 50 || o.ConnectTimeout <= 50 || o.SlowTime <= 100 || o.Retry < 0 {
+		return errors.New("redis: Name not allowed empty string")
 	}
-	if o.Addr == "" {
-		return fmt.Errorf("redis: Addr not allowed empty string")
-	}
-	if o.Database < 0 {
-		return fmt.Errorf("redis: Database less than zero")
-	}
-
-	if o.MaxIdle < 0 {
-		o.MaxIdle = 100
-	}
-	if o.MaxActive < 0 {
-		o.MaxActive = 100
-	}
-	if o.IdleTimeout < 0 {
-		o.IdleTimeout = 100
-	}
-	if o.ReadTimeout < 0 {
-		o.ReadTimeout = 50
-	}
-	if o.WriteTimeout < 0 {
-		o.WriteTimeout = 50
-	}
-	if o.ConnectTimeout < 0 {
-		o.ConnectTimeout = 300
-	}
-
-	if o.SlowTime <= 0 {
-		o.SlowTime = 100
-	}
-
-	if o.Retry < 0 {
-		o.Retry = 0
-	}
-
 	return nil
 }

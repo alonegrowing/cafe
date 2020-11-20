@@ -25,20 +25,20 @@ type Redis struct {
 
 var ctx = context.TODO()
 
-func NewRedis(o *Config) (store *Redis, err error) {
-	if err = o.init(); err != nil {
+func NewRedis(cfg *Config) (store *Redis, err error) {
+	if err = cfg.isValid(); err != nil {
 		return
 	}
 	var opts []redis.DialOption
-	opts = append(opts, redis.DialConnectTimeout(time.Duration(o.ConnectTimeout)*time.Millisecond))
-	opts = append(opts, redis.DialReadTimeout(time.Duration(o.ReadTimeout)*time.Millisecond))
-	opts = append(opts, redis.DialWriteTimeout(time.Duration(o.WriteTimeout)*time.Millisecond))
-	if len(o.Password) != 0 {
-		opts = append(opts, redis.DialPassword(o.Password))
+	opts = append(opts, redis.DialConnectTimeout(time.Duration(cfg.ConnectTimeout)*time.Millisecond))
+	opts = append(opts, redis.DialReadTimeout(time.Duration(cfg.ReadTimeout)*time.Millisecond))
+	opts = append(opts, redis.DialWriteTimeout(time.Duration(cfg.WriteTimeout)*time.Millisecond))
+	if len(cfg.Password) != 0 {
+		opts = append(opts, redis.DialPassword(cfg.Password))
 	}
-	opts = append(opts, redis.DialDatabase(o.Database))
-	pool := redisinit(o.Addr, o.Password, o.MaxIdle, o.IdleTimeout, o.MaxActive, opts...)
-	oo := *o
+	opts = append(opts, redis.DialDatabase(cfg.Database))
+	pool := redisinit(cfg.Addr, cfg.Password, cfg.MaxIdle, cfg.IdleTimeout, cfg.MaxActive, opts...)
+	oo := *cfg
 	return &Redis{
 		pool:     pool,
 		opts:     &oo,
@@ -65,7 +65,7 @@ func redisinit(server, password string, maxIdle, idleTimeout, maxActive int, opt
 			}
 			if password != "" {
 				if _, err := c.Do("AUTH", password); err != nil {
-					c.Close()
+					_ = c.Close()
 					return nil, err
 				}
 			}

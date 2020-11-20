@@ -21,7 +21,7 @@ func NewRedis(configs []redis.Config) error {
 		if err != nil || client == nil {
 			continue
 		}
-		defaultRedis[conf.ServerName] = client
+		defaultRedis[conf.Name] = client
 	}
 	return nil
 }

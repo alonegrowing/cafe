@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 
-	"git.in.zhihu.com/go/base/zae"
 	"github.com/sirupsen/logrus"
 )
 
@@ -65,7 +65,7 @@ func (f *formatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	entry.Buffer.WriteByte(' ')
 
-	entry.Buffer.WriteString(zae.Hostname())
+	entry.Buffer.WriteString(hostName())
 	entry.Buffer.WriteByte(':')
 	entry.Buffer.WriteString(processID)
 
@@ -84,4 +84,12 @@ func (f *formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	entry.Buffer.WriteByte('\n')
 
 	return entry.Buffer.Bytes(), nil
+}
+
+func hostName() string {
+	hostname, err := os.Hostname()
+	if err != nil {
+		panic(err)
+	}
+	return regexp.MustCompile("[^0-9a-zA-Z]+").ReplaceAllString(hostname, "_")
 }
