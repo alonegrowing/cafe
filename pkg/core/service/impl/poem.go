@@ -26,9 +26,21 @@ func NewPoemServiceImpl() *PoemServiceImpl {
 	}
 }
 
-func (r *PoemServiceImpl) GetPoemByID(ctx context.Context, id int64) model.Poem {
-	poem := r.poemDao.GetPoemById(ctx, id)
-	return model.Poem{
+func (r *PoemServiceImpl) GetPoemByID(ctx context.Context, id int64) *model.Poem {
+	return r.formater(r.poemDao.GetPoemById(ctx, id))
+}
+
+func (r *PoemServiceImpl) GetPoemList(ctx context.Context) []*model.Poem {
+	data := r.poemDao.GetPoemList(ctx)
+	poems := make([]*model.Poem, 0)
+	for _, item := range data {
+		poems = append(poems, r.formater(item))
+	}
+	return poems
+}
+
+func (r *PoemServiceImpl) formater(poem *dao.Poem) *model.Poem {
+	return &model.Poem{
 		Id:        poem.Id,
 		Token:     poem.Token,
 		Author:    poem.Author,

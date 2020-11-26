@@ -3,7 +3,6 @@ package config
 import (
 	"os"
 
-	"github.com/alonegrowing/cafe/pkg/basic/resource"
 	"github.com/alonegrowing/cafe/pkg/basic/util"
 	"github.com/alonegrowing/cafe/pkg/sea/log"
 	"github.com/alonegrowing/cafe/pkg/sea/redis"
@@ -19,8 +18,8 @@ func init() {
 	var conf = "./conf/prod/config.toml"
 	_ = tomlconfig.ParseTomlConfig(conf, &ServiceConfig)
 	InitLoggerConfig(ServiceConfig.Logger)
-	_ = resource.NewRedis(ServiceConfig.Redis)
-	_ = resource.NewMysqlGroup(ServiceConfig.Database)
+	//_ = resource.NewRedis(ServiceConfig.Redis)
+	//_ = resource.NewMysqlGroup(ServiceConfig.Database)
 }
 
 type Service struct {

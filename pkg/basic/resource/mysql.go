@@ -1,10 +1,15 @@
 package resource
 
 import (
+	"github.com/alonegrowing/cafe/pkg/config"
 	"github.com/alonegrowing/cafe/pkg/sea/sql"
 )
 
 var DefaultDB *sql.Group
+
+func init() {
+	_ = NewMysqlGroup(config.ServiceConfig.Database)
+}
 
 func NewMysqlGroup(database []sql.SQLGroupConfig) error {
 	if len(database) == 0 {
@@ -23,6 +28,6 @@ func NewMysqlGroup(database []sql.SQLGroupConfig) error {
 	return nil
 }
 
-func GetMysql(service string) *sql.Group {
+func Get(service string) *sql.Group {
 	return sql.SQLGroupManager.Get(service)
 }

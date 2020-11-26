@@ -7,5 +7,6 @@ import (
 )
 
 type HomeController interface {
-	GetHomePageData(ctx context.Context, id int64) model.HomePageData
+	GetPoemById(ctx context.Context, id int64) *model.Poem
+	GetPoemList(ctx context.Context) []*model.Poem
 }

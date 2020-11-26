@@ -7,5 +7,6 @@ import (
 )
 
 type PoemShared interface {
-	GetPoemByID(ctx context.Context, id int64) model.Poem
+	GetPoemByID(ctx context.Context, id int64) *model.Poem
+	GetPoemList(ctx context.Context) []*model.Poem
 }

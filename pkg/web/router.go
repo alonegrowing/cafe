@@ -22,7 +22,8 @@ func NewRouter() *gin.Engine {
 
 	homeHandler := handler.NewHomePageHandler()
 
-	route.GET("/api/home", homeHandler.Get)
+	route.GET("/api/poem", homeHandler.Get)
+	route.GET("/api/poems", homeHandler.GetList)
 
 	return route
 }

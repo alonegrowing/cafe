@@ -3,12 +3,10 @@ package impl
 import (
 	"context"
 
-	"github.com/alonegrowing/cafe/pkg/web/controller"
-
-	"github.com/alonegrowing/cafe/pkg/business/shared/impl"
-
 	"github.com/alonegrowing/cafe/pkg/business/shared"
-
+	"github.com/alonegrowing/cafe/pkg/business/shared/impl"
+	core "github.com/alonegrowing/cafe/pkg/core/model"
+	"github.com/alonegrowing/cafe/pkg/web/controller"
 	"github.com/alonegrowing/cafe/pkg/web/model"
 )
 
@@ -28,9 +26,21 @@ func NewHomeControllerImpl() *HomeControllerImpl {
 	}
 }
 
-func (r *HomeControllerImpl) GetHomePageData(ctx context.Context, id int64) model.HomePageData {
-	poem := r.poemShared.GetPoemByID(ctx, id)
-	return model.HomePageData{
+func (r *HomeControllerImpl) GetPoemById(ctx context.Context, id int64) *model.Poem {
+	return r.formater(r.poemShared.GetPoemByID(ctx, id))
+}
+
+func (r *HomeControllerImpl) GetPoemList(ctx context.Context) []*model.Poem {
+	data := r.poemShared.GetPoemList(ctx)
+	poems := make([]*model.Poem, 0)
+	for _, poem := range data {
+		poems = append(poems, r.formater(poem))
+	}
+	return poems
+}
+
+func (r *HomeControllerImpl) formater(poem *core.Poem) *model.Poem {
+	return &model.Poem{
 		Id:        poem.Id,
 		Token:     poem.Token,
 		Title:     poem.Title,

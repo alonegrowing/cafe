@@ -26,6 +26,10 @@ func NewPoemSharedImpl() *PoemSharedImpl {
 	}
 }
 
-func (r *PoemSharedImpl) GetPoemByID(ctx context.Context, id int64) model.Poem {
+func (r *PoemSharedImpl) GetPoemByID(ctx context.Context, id int64) *model.Poem {
 	return r.poemService.GetPoemByID(ctx, id)
+}
+
+func (r *PoemSharedImpl) GetPoemList(ctx context.Context) []*model.Poem {
+	return r.poemService.GetPoemList(ctx)
 }

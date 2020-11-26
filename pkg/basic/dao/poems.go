@@ -17,4 +17,5 @@ type Poem struct {
 
 type PoemDao interface {
 	GetPoemById(ctx context.Context, id int64) (poem *Poem)
+	GetPoemList(ctx context.Context) (poems []*Poem)
 }

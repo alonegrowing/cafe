@@ -1,6 +1,6 @@
 package model
 
-type HomePageData struct {
+type Poem struct {
 	Id        int64    `json:"id"`
 	Token     string   `json:"token"`
 	Title     string   `json:"title"`

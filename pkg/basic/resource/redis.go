@@ -3,6 +3,7 @@ package resource
 import (
 	"errors"
 
+	"github.com/alonegrowing/cafe/pkg/config"
 	"github.com/alonegrowing/cafe/pkg/sea/redis"
 )
 
@@ -11,6 +12,10 @@ var (
 )
 
 var defaultRedis map[string]*redis.Redis
+
+func init() {
+	_ = NewRedis(config.ServiceConfig.Redis)
+}
 
 func NewRedis(configs []redis.Config) error {
 	if defaultRedis == nil {
