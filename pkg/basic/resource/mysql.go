@@ -1,33 +1,28 @@
 package resource
 
 import (
+	"github.com/alonegrowing/cafe/pkg/basic/util"
 	"github.com/alonegrowing/cafe/pkg/config"
 	"github.com/alonegrowing/cafe/pkg/sea/sql"
 )
 
-var DefaultDB *sql.Group
-
 func init() {
-	_ = NewMysqlGroup(config.ServiceConfig.Database)
+	NewMysqlGroup(config.ServiceConfig.Database)
 }
 
-func NewMysqlGroup(database []sql.SQLGroupConfig) error {
+func NewMysqlGroup(database []sql.GroupConfig) {
 	if len(database) == 0 {
-		return nil
+		return
 	}
 	for _, d := range database {
 		g, err := sql.NewGroup(d.Name, d.Master, d.Slaves)
-		if err != nil {
-			return err
-		}
-		err = sql.SQLGroupManager.Add(d.Name, g)
-		if err != nil {
-			return err
-		}
+		util.PanicIfError(err)
+		err = sql.DefaultGroupManager.Add(d.Name, g)
+		util.PanicIfError(err)
 	}
-	return nil
+	return
 }
 
 func Get(service string) *sql.Group {
-	return sql.SQLGroupManager.Get(service)
+	return sql.DefaultGroupManager.Get(service)
 }

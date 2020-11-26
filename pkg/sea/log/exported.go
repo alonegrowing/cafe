@@ -1,7 +1,6 @@
 package log
 
 import (
-	"context"
 	"io"
 	"os"
 
@@ -70,81 +69,56 @@ func IsLevelEnabled(level Level) bool {
 //
 // Note that it doesn't log until you call Debug, Print, Info, Warn, Fatal
 // or Panic on the Entry it returns.
-func WithFields(ctx context.Context, fields Fields) *logrus.Entry {
-	return std.WithContext(ctx).WithFields(fields)
+func WithFields(fields Fields) *logrus.Entry {
+	return std.WithFields(fields)
 }
 
 // Debug logs a message at level Debug on the standard logger.
-func Debug(ctx context.Context, args ...interface{}) {
-	std.WithContext(ctx).Debug(args...)
+func Debug(args ...interface{}) {
+	std.Debug(args...)
 }
 
 // Info logs a message at level Info on the standard logger.
-func Info(ctx context.Context, args ...interface{}) {
-	std.WithContext(ctx).Info(args...)
+func Info(args ...interface{}) {
+	std.Info(args...)
 }
 
 // Warn logs a message at level Warn on the standard logger.
-func Warn(ctx context.Context, args ...interface{}) {
-	std.WithContext(ctx).Warn(args...)
+func Warn(args ...interface{}) {
+	std.Warn(args...)
 }
 
 // Error logs a message at level Error on the standard logger.
-func Error(ctx context.Context, args ...interface{}) {
-	std.WithContext(ctx).Error(args...)
+func Error(args ...interface{}) {
+	std.Error(args...)
 }
 
 // Fatal logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
-func Fatal(ctx context.Context, args ...interface{}) {
-	std.WithContext(ctx).Fatal(args...)
+func Fatal(args ...interface{}) {
+	std.Fatal(args...)
 }
 
 // Debugf logs a message at level Debug on the standard logger.
-func Debugf(ctx context.Context, format string, args ...interface{}) {
-	std.WithContext(ctx).Debugf(format, args...)
+func Debugf(format string, args ...interface{}) {
+	std.Debugf(format, args...)
 }
 
 // Infof logs a message at level Info on the standard logger.
-func Infof(ctx context.Context, format string, args ...interface{}) {
-	std.WithContext(ctx).Infof(format, args...)
+func Infof(format string, args ...interface{}) {
+	std.Infof(format, args...)
 }
 
 // Warnf logs a message at level Warn on the standard logger.
-func Warnf(ctx context.Context, format string, args ...interface{}) {
-	std.WithContext(ctx).Warnf(format, args...)
+func Warnf(format string, args ...interface{}) {
+	std.Warnf(format, args...)
 }
 
 // Errorf logs a message at level Error on the standard logger.
-func Errorf(ctx context.Context, format string, args ...interface{}) {
-	std.WithContext(ctx).Errorf(format, args...)
+func Errorf(format string, args ...interface{}) {
+	std.Errorf(format, args...)
 }
 
 // Fatalf logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
-func Fatalf(ctx context.Context, format string, args ...interface{}) {
-	std.WithContext(ctx).Fatalf(format, args...)
-}
-
-// Debugln logs a message at level Debug on the standard logger.
-func Debugln(ctx context.Context, args ...interface{}) {
-	std.WithContext(ctx).Debugln(args...)
-}
-
-// Infoln logs a message at level Info on the standard logger.
-func Infoln(ctx context.Context, args ...interface{}) {
-	std.WithContext(ctx).Infoln(args...)
-}
-
-// Warnln logs a message at level Warn on the standard logger.
-func Warnln(ctx context.Context, args ...interface{}) {
-	std.WithContext(ctx).Warnln(args...)
-}
-
-// Errorln logs a message at level Error on the standard logger.
-func Errorln(ctx context.Context, args ...interface{}) {
-	std.WithContext(ctx).Errorln(args...)
-}
-
-// Fatalln logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
-func Fatalln(ctx context.Context, args ...interface{}) {
-	std.WithContext(ctx).Fatalln(args...)
+func Fatalf(format string, args ...interface{}) {
+	std.Fatalf(format, args...)
 }

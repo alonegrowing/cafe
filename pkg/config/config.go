@@ -11,15 +11,14 @@ import (
 )
 
 var (
+	err           error
+	conf          = "./conf/prod/config.toml"
 	ServiceConfig Config
 )
 
 func init() {
-	var conf = "./conf/prod/config.toml"
-	_ = tomlconfig.ParseTomlConfig(conf, &ServiceConfig)
+	util.PanicIfError(tomlconfig.ParseTomlConfig(conf, &ServiceConfig))
 	InitLoggerConfig(ServiceConfig.Logger)
-	//_ = resource.NewRedis(ServiceConfig.Redis)
-	//_ = resource.NewMysqlGroup(ServiceConfig.Database)
 }
 
 type Service struct {
@@ -27,22 +26,22 @@ type Service struct {
 	RPCPort int64 `toml:"rpc_port"`
 }
 
-type Config struct {
-	ServiceName string               `toml:"service_name"`
-	Service     Service              `toml:"service"`
-	Logger      LoggerConfig         `toml:"log"`
-	Database    []sql.SQLGroupConfig `toml:"database"`
-	Redis       []redis.Config       `toml:"redis"`
-}
-
 type LoggerConfig struct {
 	Level   log.Level `toml:"level"`
 	LogPath string    `toml:"logpath"`
 }
 
+type Config struct {
+	ServiceName string            `toml:"service_name"`
+	Service     Service           `toml:"service"`
+	Logger      LoggerConfig      `toml:"log"`
+	Database    []sql.GroupConfig `toml:"database"`
+	Redis       []redis.Config    `toml:"redis"`
+}
+
 func InitLoggerConfig(conf LoggerConfig) {
-	log.SetLevel(log.InfoLevel)
 	file, err := os.OpenFile(conf.LogPath, os.O_CREATE|os.O_WRONLY, 0666)
 	util.PanicIfError(err)
 	log.SetOutput(file)
+	log.SetLevel(log.InfoLevel)
 }

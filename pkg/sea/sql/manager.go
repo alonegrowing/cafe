@@ -5,14 +5,12 @@ import (
 	"sync"
 )
 
+var DefaultGroupManager = newGroupManager()
+
 type GroupManager struct {
 	mu     sync.RWMutex
 	groups map[string]*Group
 }
-
-var (
-	SQLGroupManager = newGroupManager()
-)
 
 func newGroupManager() *GroupManager {
 	return &GroupManager{
@@ -42,9 +40,9 @@ func (gm *GroupManager) PartitionBy(partiton func() (bool, string, string)) *Cli
 }
 
 func Get(name string) *Group {
-	return SQLGroupManager.Get(name)
+	return DefaultGroupManager.Get(name)
 }
 
 func PartitionBy(partiton func() (bool, string, string)) *Client {
-	return SQLGroupManager.PartitionBy(partiton)
+	return DefaultGroupManager.PartitionBy(partiton)
 }

@@ -7,17 +7,13 @@ import (
 	"github.com/alonegrowing/cafe/pkg/sea/redis"
 )
 
-var (
-	RedisClientNotInit = errors.New("redis client not init")
-)
-
 var defaultRedis map[string]*redis.Redis
 
 func init() {
-	_ = NewRedis(config.ServiceConfig.Redis)
+	NewRedis(config.ServiceConfig.Redis)
 }
 
-func NewRedis(configs []redis.Config) error {
+func NewRedis(configs []redis.Config) {
 	if defaultRedis == nil {
 		defaultRedis = make(map[string]*redis.Redis)
 	}
@@ -28,12 +24,12 @@ func NewRedis(configs []redis.Config) error {
 		}
 		defaultRedis[conf.Name] = client
 	}
-	return nil
+	return
 }
 
 func GetRedis(service string) (*redis.Redis, error) {
 	if client, ok := defaultRedis[service]; ok {
 		return client, nil
 	}
-	return nil, RedisClientNotInit
+	return nil, errors.New("RedisClientNotInit")
 }

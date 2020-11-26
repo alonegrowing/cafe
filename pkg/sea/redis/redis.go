@@ -117,13 +117,13 @@ func (r *Redis) Receive(name string, closech chan struct{}, bufferSize int) chan
 					if data != nil {
 						ms, err := redis.ByteSlices(data, nil)
 						if err != nil {
-							log.Errorf(context.TODO(), "convert redis response error %v", err)
+							log.Errorf("convert redis response error %v", err)
 						} else {
 							ch <- ms[1]
 						}
 					}
 				} else if err != ErrTimeout {
-					log.Errorf(ctx, "BRPOP error %s", err)
+					log.Errorf("BRPOP error %s", err)
 				}
 			}
 		}
@@ -578,9 +578,9 @@ func (r *Redis) Subscribe(ctx context.Context, key string, maxSize int) (chan []
 				case redis.Message:
 					ch <- v.Data
 				case redis.Subscription:
-					log.Infof(ctx, "Receive chan (%s) %s %d", v.Channel, v.Kind, v.Count)
+					log.Infof("Receive chan (%s) %s %d", v.Channel, v.Kind, v.Count)
 				case error:
-					log.Errorf(ctx, "Receive error (%v), client will reconnect..", v)
+					log.Errorf("Receive error (%v), client will reconnect..", v)
 					client.Close()
 					if !offHealthCheck {
 						done <- v
@@ -684,7 +684,7 @@ retry2:
 	reply, err = client.Do(cmd, args...)
 	if r.opts.Retry > 0 && count < r.opts.Retry && err != nil && err != redis.ErrNil {
 		count = count + 1
-		log.Infof(ctx, "redisclient retry %d times, cmd %s cause %s", count, cmd, err)
+		log.Infof("redisclient retry %d times, cmd %s cause %s", count, cmd, err)
 		time.Sleep(time.Millisecond * r.randomDuration(10))
 		goto retry2
 	}
@@ -703,13 +703,13 @@ retry2:
 		} else {
 			stCode = redisError
 		}
-		log.Infof(context.Background(), "%d|redisclient|%s|%s|%d|%s|%s", serverLocalPid, "reqid", cmd, stCode, err, address)
+		log.Infof("%d|redisclient|%s|%s|%d|%s|%s", serverLocalPid, "reqid", cmd, stCode, err, address)
 	}
 
 	endTime := time.Now()
 	costTime := time.Now().Sub(now).Nanoseconds() / 1e6
 	if (r.opts.SlowTime > 0 && costTime > int64(r.opts.SlowTime)) || (stCode == redisTimeout) {
-		log.Infof(ctx, "%d|%s|redisclient|%s|%s|%d|%d|%s|%s", serverLocalPid, endTime.Format(logFormat), "reqid", cmd, stCode, costTime, address, "nil")
+		log.Infof("%d|%s|redisclient|%s|%s|%d|%d|%s|%s", serverLocalPid, endTime.Format(logFormat), "reqid", cmd, stCode, costTime, address, "nil")
 	}
 	return
 }

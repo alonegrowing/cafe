@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"strings"
 	"time"
 
@@ -10,7 +9,6 @@ import (
 )
 
 func Logger() gin.HandlerFunc {
-	var ctx = context.TODO()
 	return func(c *gin.Context) {
 		start := time.Now()
 		path := c.Request.URL.Path
@@ -27,6 +25,6 @@ func Logger() gin.HandlerFunc {
 		comment := c.Errors.ByType(gin.ErrorTypePrivate).String()
 		handlerNamePathParts := strings.Split(c.HandlerName(), "/")
 		handleName := handlerNamePathParts[len(handlerNamePathParts)-1]
-		log.Infof(ctx, "%20v | %3d | %13v | %15s | %-7s %s\n%s", handleName, statusCode, latency, clientIP, method, path, comment)
+		log.Infof("%20v | %3d | %13v | %15s | %-7s %s\n%s", handleName, statusCode, latency, clientIP, method, path, comment)
 	}
 }
