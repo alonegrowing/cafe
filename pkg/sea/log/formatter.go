@@ -34,13 +34,9 @@ type formatter struct{}
 
 func (f *formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	entry.Buffer.WriteByte('[')
-
 	entry.Buffer.WriteByte(severityMap[entry.Level])
-
 	entry.Buffer.WriteByte(' ')
-
 	entry.Buffer.WriteString(entry.Time.Format("2006-01-02 15:04:05.000"))
-
 	entry.Buffer.WriteByte(' ')
 
 	var traceID string
@@ -52,9 +48,7 @@ func (f *formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	} else {
 		entry.Buffer.WriteByte('-')
 	}
-
 	entry.Buffer.WriteByte(' ')
-
 	if entry.Caller != nil {
 		entry.Buffer.WriteString(filepath.Base(entry.Caller.File))
 		entry.Buffer.WriteByte(':')
@@ -64,13 +58,10 @@ func (f *formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	}
 
 	entry.Buffer.WriteByte(' ')
-
 	entry.Buffer.WriteString(hostName())
 	entry.Buffer.WriteByte(':')
 	entry.Buffer.WriteString(processID)
-
 	entry.Buffer.WriteString("] ")
-
 	if len(entry.Data) > 0 {
 		if extraData, err := json.Marshal(entry.Data); err == nil {
 			entry.Buffer.WriteString("[")
@@ -78,9 +69,7 @@ func (f *formatter) Format(entry *logrus.Entry) ([]byte, error) {
 			entry.Buffer.WriteString("] ")
 		}
 	}
-
 	entry.Buffer.WriteString(entry.Message)
-
 	entry.Buffer.WriteByte('\n')
 
 	return entry.Buffer.Bytes(), nil
